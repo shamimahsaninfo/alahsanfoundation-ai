@@ -55,7 +55,7 @@ function AdminPage() {
 
   const changeProvider = (p: Provider) => {
     setProvider(p);
-    setModel((p === "google" ? GOOGLE_MODELS : p === "openai" ? OPENAI_MODELS : LOVABLE_MODELS)[0].id);
+    setModel((p === "google" ? GOOGLE_MODELS : p === "openai" ? OPENAI_MODELS : LOVABLE_MODELS)[0]?.id ?? "");
   };
 
   const save = async () => {

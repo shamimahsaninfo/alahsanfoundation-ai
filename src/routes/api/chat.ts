@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
         if (!token) return new Response("Unauthorized", { status: 401 });
-        const pub = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+        const pub = createClient(process.env['SUPABASE_URL']!, process.env['SUPABASE_PUBLISHABLE_KEY']!, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data: u, error: ue } = await pub.auth.getUser(token);
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/chat")({
         const model = s?.model || "google/gemini-3.1-pro-preview";
 
         let url = "https://ai.gateway.lovable.dev/v1/chat/completions";
-        let key = process.env.LOVABLE_API_KEY;
+        let key = process.env['LOVABLE_API_KEY'];
         if (provider === "google") {
           url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
           key = s?.google_api_key || undefined;
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/chat")({
           stream: true,
           messages: [{ role: "system", content: system }, ...parsed.data.messages],
         };
-        if (provider === "lovable" && model.startsWith("openai/gpt-5.6")) body.reasoning_effort = "none";
+        if (provider === "lovable" && model.startsWith("openai/gpt-5.6")) body['reasoning_effort'] = "none";
 
         const res = await fetch(url, {
           method: "POST",
