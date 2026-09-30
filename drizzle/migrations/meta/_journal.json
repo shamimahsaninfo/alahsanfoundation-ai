@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790777316017,
+      "tag": "0000_al_ahsan_core",
+      "breakpoints": true
+    }
+  ]
 }
