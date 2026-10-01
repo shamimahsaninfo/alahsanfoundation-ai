@@ -14,6 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiPagesRouteImport } from './routes/api/pages'
+import { Route as PIdRouteImport } from './routes/p/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,18 +41,32 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPagesRoute = ApiPagesRouteImport.update({
+  id: '/api/pages',
+  path: '/api/pages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PIdRoute = PIdRouteImport.update({
+  id: '/p/$id',
+  path: '/p/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/chat': typeof AuthenticatedChatRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/pages': typeof ApiPagesRoute
+  '/p/$id': typeof PIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/chat': typeof AuthenticatedChatRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/pages': typeof ApiPagesRoute
+  '/p/$id': typeof PIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +75,14 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/pages': typeof ApiPagesRoute
+  '/p/$id': typeof PIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/chat' | '/api/chat'
+  fullPaths: '/' | '/admin' | '/chat' | '/api/chat' | '/api/pages' | '/p/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/chat' | '/api/chat'
+  to: '/' | '/admin' | '/chat' | '/api/chat' | '/api/pages' | '/p/$id'
   id:
     | '__root__'
     | '/'
@@ -72,12 +90,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/chat'
     | '/api/chat'
+    | '/api/pages'
+    | '/p/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
+  ApiPagesRoute: typeof ApiPagesRoute
+  PIdRoute: typeof PIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -117,6 +139,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pages': {
+      id: '/api/pages'
+      path: '/api/pages'
+      fullPath: '/api/pages'
+      preLoaderRoute: typeof ApiPagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$id': {
+      id: '/p/$id'
+      path: '/p/$id'
+      fullPath: '/p/$id'
+      preLoaderRoute: typeof PIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -137,6 +173,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
+  ApiPagesRoute: ApiPagesRoute,
+  PIdRoute: PIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
