@@ -47,8 +47,11 @@ export const Route = createFileRoute("/api/chat")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: s } = await supabaseAdmin.from("ai_settings").select("*").eq("id", 1).maybeSingle();
-        const provider = s?.provider ?? "lovable";
-        const model = s?.model || "google/gemini-3.1-pro-preview";
+        const provider = (s?.provider ?? "lovable") as Provider;
+        const stored = (s?.model || "").trim();
+        const retired = /^gemini-(1|2)\.|^gpt-3|^o1-|^gemini-pro$/i.test(stored);
+        const model = !stored || retired ? DEFAULT_MODELS[provider] : stored;
+
 
         let url = "https://ai.gateway.lovable.dev/v1/chat/completions";
         let key = process.env['LOVABLE_API_KEY'];
