@@ -161,6 +161,23 @@ function ChatPage() {
     }
     setLoading(false);
     if (full) {
+      const htmlMatch = full.match(/```html\s*\n([\s\S]*?)```/i);
+      if (htmlMatch && htmlMatch[1].includes("<html")) {
+        try {
+          const { data: s2 } = await supabase.auth.getSession();
+          const pr = await fetch("/api/pages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${s2.session?.access_token}` },
+            body: JSON.stringify({ title: text.slice(0, 80), html: htmlMatch[1].trim() }),
+          });
+          if (pr.ok) {
+            const { url } = await pr.json();
+            const liveUrl = `${window.location.origin}${url}`;
+            full += `\n\n🌐 **লাইভ লিংক:** [এখানে ক্লিক করে ওয়েবসাইটটি দেখুন](${liveUrl})`;
+            setMsgs((m) => [...m.slice(0, -1), { role: "assistant", content: full }]);
+          }
+        } catch {}
+      }
       await supabase.from("messages").insert({ conversation_id: convId, role: "assistant", content: full });
       await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
       if (voiceOut) speak(full);
