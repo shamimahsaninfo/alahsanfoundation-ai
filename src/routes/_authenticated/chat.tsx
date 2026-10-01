@@ -161,14 +161,14 @@ function ChatPage() {
     }
     setLoading(false);
     if (full) {
-      const htmlMatch = full.match(/```html\s*\n([\s\S]*?)```/i);
-      if (htmlMatch && htmlMatch[1].includes("<html")) {
+      const htmlCode = full.match(/```html\s*\n([\s\S]*?)```/i)?.[1];
+      if (htmlCode && htmlCode.includes("<html")) {
         try {
           const { data: s2 } = await supabase.auth.getSession();
           const pr = await fetch("/api/pages", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${s2.session?.access_token}` },
-            body: JSON.stringify({ title: text.slice(0, 80), html: htmlMatch[1].trim() }),
+            body: JSON.stringify({ title: text.slice(0, 80), html: htmlCode.trim() }),
           });
           if (pr.ok) {
             const { url } = await pr.json();
