@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { DEFAULT_MODELS, type Provider } from "@/lib/models";
+
 
 const Body = z.object({
   messages: z
