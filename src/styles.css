@@ -111,7 +111,8 @@
   }
 }
 
-body { font-family: var(--font-body); }
+body { font-family: var(--font-body); overscroll-behavior-y: contain; }
+html { overscroll-behavior-y: contain; }
 .pattern-bg {
   background-color: var(--background);
   background-image:
