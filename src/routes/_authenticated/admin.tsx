@@ -28,6 +28,12 @@ function AdminPage() {
   const [gKey, setGKey] = useState("");
   const [oKey, setOKey] = useState("");
   const [status, setStatus] = useState("");
+  const [complaints, setComplaints] = useState<{ id: string; email: string | null; message: string; status: string; created_at: string }[]>([]);
+  const loadComplaints = () =>
+    (supabase as any).from("complaints").select("*").order("created_at", { ascending: false }).limit(200).then(({ data }: any) => setComplaints(data ?? []));
+  useEffect(() => { loadComplaints(); }, []);
+  const markDone = async (id: string) => { await (supabase as any).from("complaints").update({ status: "done" }).eq("id", id); loadComplaints(); };
+  const delComplaint = async (id: string) => { await (supabase as any).from("complaints").delete().eq("id", id); loadComplaints(); };
 
   useEffect(() => {
     supabase.from("ai_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => {
@@ -123,6 +129,23 @@ function AdminPage() {
           <input type="password" value={gKey} onChange={(e) => setGKey(e.target.value)} className={`${input} mt-1`} placeholder="AIza…" />
           <label className="mt-4 block text-sm text-muted-foreground">OpenAI API কী</label>
           <input type="password" value={oKey} onChange={(e) => setOKey(e.target.value)} className={`${input} mt-1`} placeholder="sk-…" />
+        </section>
+
+        <section className={`${card} mt-6`}>
+          <h2 className="font-display text-xl text-primary">অভিযোগ বাক্স ({complaints.filter((c) => c.status !== "done").length} নতুন)</h2>
+          {complaints.length === 0 && <p className="mt-2 text-sm text-muted-foreground">এখনো কোনো অভিযোগ আসেনি।</p>}
+          <div className="mt-3 space-y-3">
+            {complaints.map((c) => (
+              <div key={c.id} className={`rounded-lg border p-3 ${c.status === "done" ? "border-border opacity-60" : "border-primary/40"}`}>
+                <div className="flex justify-between text-xs text-muted-foreground"><span>{c.email}</span><span>{new Date(c.created_at).toLocaleString("bn-BD")}</span></div>
+                <p className="mt-1 whitespace-pre-wrap text-sm">{c.message}</p>
+                <div className="mt-2 flex gap-3 text-xs">
+                  {c.status !== "done" && <button onClick={() => markDone(c.id)} className="text-primary">✓ সমাধান হয়েছে</button>}
+                  <button onClick={() => delComplaint(c.id)} className="text-destructive">মুছুন</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className="mt-6 flex items-center gap-4">
