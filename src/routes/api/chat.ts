@@ -70,11 +70,11 @@ async function webSearch(q: string) {
     const re = /<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]*class="result__snippet"[^>]*>([\s\S]*?)<\/a>/gi;
     let m;
     while ((m = re.exec(h)) && out.length < 6) {
-      let link = m[1];
+      let link = m[1] ?? "";
       const u = link.match(/uddg=([^&]+)/);
-      if (u) link = decodeURIComponent(u[1]);
+      if (u) link = decodeURIComponent(u[1] ?? "");
       const strip = (x: string) => x.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#x27;/g, "'").trim();
-      out.push(`- ${strip(m[2])} — ${link}\n  ${strip(m[3])}`);
+      out.push(`- ${strip(m[2] ?? "")} — ${link}\n  ${strip(m[3] ?? "")}`);
     }
     return out.length ? out.join("\n") : "";
   } catch {
@@ -167,8 +167,10 @@ export const Route = createFileRoute("/api/chat")({
             attempts.push({ url: LOV, key: lovKey, model: m, label: `আল-আহসান ক্লাউড ব্যাকআপ (${m})` });
         }
         const seen = new Set<string>();
-        const chain = attempts.filter((a) => a.key && !seen.has(a.url + a.model) && seen.add(a.url + a.model));
-        if (!chain.length) return new Response("এআই কী সেট করা নেই। অ্যাডমিন প্যানেল থেকে API কী যোগ করুন।", { status: 500 });
+        const chainAll = attempts.filter((a) => a.key && !seen.has(a.url + a.model) && seen.add(a.url + a.model));
+        const first = chainAll[0];
+        const chain = chainAll;
+        if (!first) return new Response("এআই কী সেট করা নেই। অ্যাডমিন প্যানেল থেকে API কী যোগ করুন।", { status: 500 });
 
         // Clean history: never feed old error messages back to the model.
         const history = parsed.data.messages.filter((m) => !(m.role === "assistant" && (m.content.startsWith("⚠️") || !m.content.trim())));
@@ -186,7 +188,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const isAdmin = (u.user.email || "").toLowerCase() === ADMIN_EMAIL;
         let system = BASE_PROMPT;
-        system += `\n\n## বর্তমান পরিবেশ\n- সার্ভার/মডেল: ${chain[0].label}\n- সার্ভারের সময় (UTC): ${new Date().toISOString()}\n- ব্যবহারকারীর স্থানীয় সময়: ${ctx?.time ?? "অজানা"} (টাইমজোন: ${ctx?.tz ?? "অজানা"})\n- ডিভাইস/ব্রাউজার: ${ctx?.ua ?? "অজানা"}\n- স্ক্রিন: ${ctx?.screen ?? "অজানা"}, ভাষা: ${ctx?.lang ?? "অজানা"}\n- ব্যবহারকারীর ইমেইল: ${u.user.email ?? "অজানা"}${isAdmin ? " — ইনি তোমার অ্যাডমিন।" : ""}`;
+        system += `\n\n## বর্তমান পরিবেশ\n- সার্ভার/মডেল: ${first.label}\n- সার্ভারের সময় (UTC): ${new Date().toISOString()}\n- ব্যবহারকারীর স্থানীয় সময়: ${ctx?.time ?? "অজানা"} (টাইমজোন: ${ctx?.tz ?? "অজানা"})\n- ডিভাইস/ব্রাউজার: ${ctx?.ua ?? "অজানা"}\n- স্ক্রিন: ${ctx?.screen ?? "অজানা"}, ভাষা: ${ctx?.lang ?? "অজানা"}\n- ব্যবহারকারীর ইমেইল: ${u.user.email ?? "অজানা"}${isAdmin ? " — ইনি তোমার অ্যাডমিন।" : ""}`;
         if (s?.admin_note?.trim()) {
           system += `\n\n=== অ্যাডমিনের নির্দেশনা (সর্বোচ্চ অগ্রাধিকার — অবশ্যই মেনে চলবে) ===\n${s.admin_note.trim()}`;
         }
@@ -201,7 +203,7 @@ export const Route = createFileRoute("/api/chat")({
         let lastErr = "";
         let lastStatus = 500;
         for (const a of chain) {
-          const body: Record<string, unknown> = { model: a.model, stream: true, messages: [{ role: "system", content: system.replace(chain[0].label, a.label) }, ...msgs] };
+          const body: Record<string, unknown> = { model: a.model, stream: true, messages: [{ role: "system", content: system.replace(first.label, a.label) }, ...msgs] };
           if (a.url === LOV && a.model.startsWith("openai/gpt-5.6")) body['reasoning_effort'] = "none";
           try {
             const res = await fetch(a.url, {
